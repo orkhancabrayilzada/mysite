@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Müəllim paneli</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Rubik:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="bar1"><h1>Müəllim paneli</h1><span class="live" id="lv" style="margin:0;color:inherit;opacity:.85"><i></i><span>…</span></span></div>
+  <nav class="nav" id="nav"><a href="#list" data-r="list">Sınaqlar</a><a href="#res" data-r="res">Nəticələr</a><a href="#link" data-r="link">Tələbə linki</a><a href="#backup" data-r="backup">Ehtiyat</a></nav>
+</header>
+<main><div id="app"><section class="sheet"><p>Yüklənir…</p></section></div></main>
+<div class="toast" id="toast" hidden></div>
+<script src="core.js"></script>
+<script>
+{
+var U = SNQ, $ = U.$, esc = U.esc;
+var app = $('app');
+var H12 = 12 * 3600 * 1000;
+var SYM = ['²','³','√','π','·','×',':','−','±','°','≤','≥','≠','∠','△','½','¼','∞','₁','₂','ⁿ','(',')','%'];
+var SAMPLE = {title:'Riyaziyyat sınağı', min:30, shuffle:true, qs:[
+  {q:'3x − 7 = 11 tənliyini həll edin.', o:['x = 4','x = 6','x = 18','x = 5'], a:1, e:'3x = 11 + 7 = 18, buradan x = 18 : 3 = 6.'},
+  {q:'2/3 + 3/4 cəmini tapın.', o:['5/7','5/12','17/12','6/7'], a:2, e:'Ortaq məxrəc 12-dir: 8/12 + 9/12 = 17/12. Surətlər və məxrəclər ayrı-ayrılıqda toplanmır.'},
+  {q:'Hansı ədədin 25%-i 40-a bərabərdir?', o:['10','100','160','65'], a:2, e:'25% = 1/4. Ədədin dörddə biri 40-dırsa, ədəd 40 · 4 = 160-dır.'},
+  {q:'Uzunluğu 8 sm, eni 5 sm olan düzbucaqlının perimetri neçədir?', o:['13 sm','26 sm','40 sm','20 sm'], a:1, e:'P = 2 · (a + b) = 2 · (8 + 5) = 26 sm. 40 isə sahədir (sm²).'},
+  {q:'(−3)² − 2 · (−4) ifadəsinin qiymətini tapın.', o:['1','−17','17','−1'], a:2, e:'(−3)² = 9, 2 · (−4) = −8. 9 − (−8) = 9 + 8 = 17.'},
+  {q:'√144 + √81 = ?', o:['15','21','225','25'], a:1, e:'√144 = 12, √81 = 9, cəmi 21. Kökləri toplamaq ədədləri toplayıb kök almaqla eyni deyil.'},
+  {q:'Üçbucağın iki bucağı 50° və 60°-dir. Üçüncü bucağı tapın.', o:['70°','80°','110°','90°'], a:0, e:'Üçbucağın daxili bucaqlarının cəmi 180°-dir: 180° − 50° − 60° = 70°.'},
+  {q:'2x + 5 > 13 bərabərsizliyini həll edin.', o:['x > 9','x < 4','x > 4','x > 8'], a:2, e:'2x > 8, buradan x > 4. Müsbət ədədə böləndə işarə dəyişmir.'},
+  {q:'4; 7; 10; … ardıcıllığının 10-cu həddini tapın.', o:['31','34','40','28'], a:0, e:'d = 3. aₙ = a₁ + (n − 1) · d = 4 + 9 · 3 = 31.'},
+  {q:'Qiyməti 200 AZN olan malın qiyməti 15% endirildi. Yeni qiymət neçədir?', o:['185 AZN','30 AZN','170 AZN','175 AZN'], a:2, e:'200-ün 15%-i = 30 AZN. 200 − 30 = 170 AZN.'}
+]};
+
+/* ---------- yaddaş ---------- */
+var T = U.ls('snq_t');          // {topic, pub, priv}
+var QS = U.ls('snq_tq') || [];   // sınaqlar
+var RS = U.ls('snq_tr') || {};   // nəticələr: {quizId: {sid: payload}}
+var seen = {}, view = '', pollT = null, busyPub = false;
+function saveQS(){ U.ls('snq_tq', QS); }
+function saveRS(){ U.ls('snq_tr', RS); }
+function getQ(id){ return QS.filter(function(q){ return q.id === id; })[0]; }
+function live(q){ return q && q.active && Date.now() - q.pubAt < H12; }
+function studentLink(){ return location.href.split('#')[0].replace(/[^/]*$/, '') + 'index.html#' + T.topic; }
+function newQ(src){
+  src = src || {title:'Yeni sınaq', min:30, shuffle:true, qs:[]};
+  var q = {id:U.rid(8), title:src.title, min:src.min, shuffle:src.shuffle, created:Date.now(), active:false, pubAt:0, dirty:false,
+    qs:(src.qs.length ? src.qs : [{q:'', o:['','','',''], a:0, e:''}]).map(function(x){ var o = x.o.slice(); while (o.length < 4) o.push(''); return {i:U.rid(5), q:x.q, o:o, a:x.a, e:x.e || ''}; })};
+  QS.unshift(q); saveQS(); return q;
+}
+function toPublic(Q){
+  return {id:Q.id, t:Q.title.trim(), m:Q.min, s:Q.shuffle ? 1 : 0, pk:T.pub, q:Q.qs.map(function(x){
+    var idx = []; x.o.forEach(function(t, j){ if (t.trim()) idx.push(j); });
+    var o = idx.map(function(j){ return x.o[j].trim(); });
+    return {i:x.i, q:x.q.trim(), o:o, a:U.hide(Q.id, x.i, idx.indexOf(x.a), o.length), e:(x.e || '').trim()};
+  })};
+}
+function validate(Q){
+  if (!Q.title.trim()) return 'Sınağın adını yazın.';
+  if (!(Q.min >= 1)) return 'Vaxtı dəqiqə ilə yazın (ən azı 1).';
+  if (!Q.qs.length) return 'Ən azı bir sual əlavə edin.';
+  for (var i = 0; i < Q.qs.length; i++){
+    var x = Q.qs[i], n = x.o.filter(function(t){ return t.trim(); }).length;
+    if (!x.q.trim()) return (i + 1) + '-ci sualın mətni boşdur.';
+    if (n < 2) return (i + 1) + '-ci sualda ən azı 2 variant olmalıdır.';
+    if (!(x.o[x.a] || '').trim()) return (i + 1) + '-ci sualda düzgün cavabı seçin (yaşıl dairə).';
+  }
+  return '';
+}
+
+/* ---------- aktiv et / bağla ---------- */
+function activate(Q, silent){
+  var err = validate(Q); if (err){ U.toast(err); return Promise.resolve(false); }
+  if (busyPub) return Promise.resolve(false); busyPub = true;
+  if (!silent) U.toast('Tələbələrə göndərilir…');
+  var others = QS.filter(function(q){ return q.id !== Q.id && q.active; });
+  return Promise.all(others.map(function(q){ return U.publish(T.topic, 'X', q.id).then(function(){ q.active = false; }); }))
+    .then(function(){ return U.pack(toPublic(Q)); })
+    .then(function(d){ return U.publish(T.topic, 'Q', Q.id + '~' + d); })
+    .then(function(ok){
+      busyPub = false;
+      if (ok){ Q.active = true; Q.pubAt = Date.now(); Q.dirty = false; saveQS(); if (!silent) U.toast('✓ Sınaq aktivdir. Tələbələr linkdən girə bilər.'); }
+      else U.toast('Göndərilmədi. İnterneti yoxlayıb yenidən basın.');
+      return ok;
+    });
+}
+function closeQ(Q){
+  U.toast('Bağlanır…');
+  return U.publish(T.topic, 'X', Q.id).then(function(ok){
+    if (ok){ Q.active = false; saveQS(); U.toast('Sınaq bağlandı. Yazmağa başlayanlar bitirə bilər.'); } else U.toast('Bağlanmadı. İnterneti yoxlayın.');
+    return ok;
+  });
+}
+
+/* ---------- canlı nəticələr ---------- */
+function poll(){
+  if (document.hidden) return;
+  U.readChannel(T.topic).then(function(ev){
+    var jobs = ev.filter(function(e){ return e.kind === 'R' && !seen[e.id]; }).map(function(e){
+      seen[e.id] = 1;
+      return U.openSealed(T.priv, e.data).then(function(p){
+        if (!p || !p.qz || !p.sid) return false;
+        var box = RS[p.qz] = RS[p.qz] || {}, old = box[p.sid];
+        if (old && (old.type === 'end' || old.type === p.type)) return false;
+        box[p.sid] = p; return true;
+      }).catch(function(){ return false; });
+    });
+    return Promise.all(jobs);
+  }).then(function(ch){
+    setLive(true);
+    if (ch.some(Boolean)){ saveRS(); if (view === 'res' || view === 'list') route(); }
+    var a = QS.filter(function(q){ return q.active; })[0];
+    if (a && Date.now() - a.pubAt > 9 * 3600 * 1000 && !a.dirty) activate(a, true);
+  }).catch(function(){ setLive(false); });
+}
+function setLive(ok){ var l = $('lv'); l.className = 'live' + (ok ? '' : ' bad'); l.lastChild.textContent = ok ? 'Canlı · ' + U.hm(Date.now()) : 'Bağlantı yoxdur'; }
+function counts(id){ var b = RS[id] || {}, d = 0, p = 0; Object.keys(b).forEach(function(k){ if (b[k].type === 'end') d++; else p++; }); return {d:d, p:p}; }
+
+/* ---------- görünüşlər ---------- */
+function sheet(html){ app.innerHTML = '<section class="sheet">' + html + '</section>'; }
+
+function renderList(){
+  var act = QS.filter(live)[0];
+  sheet('<h2 class="title">Sınaqlarım</h2>' +
+    '<p class="who">' + (act ? 'Hazırda aktiv: <b>' + esc(act.title) + '</b> · ' + U.hm(act.pubAt + H12) + '-dək açıqdır' : 'Hazırda aktiv sınaq yoxdur — tələbələr gözləmə ekranını görür.') + '</p>' +
+    '<div class="row"><button class="btn" id="nw">+ Yeni sınaq</button><button class="btn ghost" id="sm">Nümunə sınaq əlavə et</button></div>' +
+    '<div class="list">' + (QS.length ? QS.map(function(q){
+      var c = counts(q.id), on = live(q);
+      return '<div class="card' + (on ? ' act' : '') + '"><h4>' + esc(q.title) + (on ? '<span class="badge on">Aktiv</span>' : '<span class="badge">Bağlı</span>') + '</h4>' +
+        '<p class="sub">' + q.qs.length + ' sual · ' + q.min + ' dəq · ' + c.d + ' nəticə' + (c.p ? ' · ' + c.p + ' nəfər yazır' : '') + (q.dirty && on ? ' · <b style="color:var(--amber)">dəyişikliklər göndərilməyib</b>' : '') + '</p>' +
+        '<div class="acts">' + (on ? '<button class="btn sm danger" data-a="close" data-id="' + q.id + '">Bağla</button>' : '<button class="btn sm go" data-a="open" data-id="' + q.id + '">Aktiv et</button>') +
+        '<a class="btn sm ghost" href="#edit/' + q.id + '">Redaktə</a><a class="btn sm ghost" href="#res/' + q.id + '">Nəticələr</a>' +
+        '<button class="btn sm ghost" data-a="dup" data-id="' + q.id + '">Kopyala</button><button class="btn sm danger" data-a="del" data-id="' + q.id + '">Sil</button></div></div>';
+    }).join('') : '<p class="note">Hələ sınaq yoxdur. "Yeni sınaq" basın.</p>') + '</div>' +
+    '<p class="note">Bir anda yalnız bir sınaq aktiv olur. Aktiv sınaq 12 saat açıq qalır; bu panel açıq olanda müddət özü uzanır.</p>');
+  $('nw').onclick = function(){ location.hash = 'edit/' + newQ().id; };
+  $('sm').onclick = function(){ location.hash = 'edit/' + newQ(SAMPLE).id; };
+  app.querySelectorAll('[data-a]').forEach(function(b){ b.onclick = function(){
+    var Q = getQ(b.dataset.id), a = b.dataset.a;
+    if (a === 'open') activate(Q).then(route);
+    if (a === 'close') closeQ(Q).then(route);
+    if (a === 'dup'){ var c = newQ({title:Q.title + ' (kopya)', min:Q.min, shuffle:Q.shuffle, qs:Q.qs}); location.hash = 'edit/' + c.id; }
+    if (a === 'del'){
+      if (!b.dataset.sure){ b.dataset.sure = 1; b.textContent = 'Əminsiniz? Yenə basın'; return; }
+      (live(Q) ? closeQ(Q) : Promise.resolve()).then(function(){ QS = QS.filter(function(q){ return q.id !== Q.id; }); delete RS[Q.id]; saveQS(); saveRS(); route(); });
+    }
+  }; });
+}
+
+function renderEdit(Q){
+  var lastF = null, tSave = null;
+  var store = function(){ clearTimeout(tSave); if (live(Q)) Q.dirty = true; tSave = setTimeout(function(){ saveQS(); drawDirty(); }, 300); };
+  sheet('<a class="back" href="#list">← Sınaqlarım</a><h2 class="title">Sınağı hazırla</h2>' +
+    '<div class="form" style="margin-top:18px"><label class="full">Sınağın adı<input id="et" maxlength="80" value="' + esc(Q.title) + '"></label>' +
+    '<label>Vaxt (dəqiqə)<input id="em" type="number" min="1" max="300" inputmode="numeric" value="' + esc(Q.min) + '"></label>' +
+    '<label class="chk"><input type="checkbox" id="es"' + (Q.shuffle ? ' checked' : '') + '> Hər tələbədə sualların və variantların sırası fərqli olsun</label></div>' +
+    '<div class="sym" id="sym">' + SYM.map(function(s){ return '<button type="button" data-s="' + s + '">' + s + '</button>'; }).join('') + '</div>' +
+    '<div id="qs"></div><button class="btn ghost" id="addq">+ Sual əlavə et</button>' +
+    '<p class="err" id="ee" style="margin-top:14px"></p>' +
+    '<div class="row"><button class="btn ghost" id="pv">Önizləmə</button><button class="btn go" id="go"></button></div>' +
+    '<p class="note center">Yazdıqlarınız telefonda avtomatik saxlanır.</p><div id="dirty"></div>');
+  function drawDirty(){
+    $('go').textContent = live(Q) ? 'Yadda saxla və tələbələrə göndər' : 'Yadda saxla və aktiv et';
+    $('dirty').innerHTML = live(Q) && Q.dirty ? '<div class="dirty"><span>Dəyişikliklər tələbələrə hələ göndərilməyib</span><button class="btn sm" id="push">Göndər</button></div>' : '';
+    if ($('push')) $('push').onclick = publishNow;
+  }
+  function publishNow(){
+    var err = validate(Q); $('ee').textContent = err; if (err) return;
+    clearTimeout(tSave); saveQS();
+    activate(Q).then(function(ok){ if (ok) drawDirty(); });
+  }
+  function draw(){
+    $('qs').innerHTML = Q.qs.map(function(x, i){
+      return '<div class="qc" data-i="' + i + '"><div class="qh"><b>Sual ' + (i + 1) + '</b><div class="acts">' +
+        '<button class="btn sm ghost" data-act="up" aria-label="Yuxarı"' + (i ? '' : ' disabled') + '>↑</button>' +
+        '<button class="btn sm ghost" data-act="dn" aria-label="Aşağı"' + (i < Q.qs.length - 1 ? '' : ' disabled') + '>↓</button>' +
+        '<button class="btn sm danger" data-act="del" aria-label="Sil">✕</button></div></div>' +
+        '<textarea data-f="q" placeholder="Sualın mətni">' + esc(x.q) + '</textarea>' +
+        x.o.map(function(t, j){ return '<div class="ov' + (x.a === j ? ' ok' : '') + '"><input type="radio" name="a' + i + '" data-f="a" value="' + j + '"' + (x.a === j ? ' checked' : '') + ' aria-label="Düzgün cavab ' + U.LET[j] + '"><input type="text" data-f="o' + j + '" placeholder="Variant ' + U.LET[j] + (j > 1 ? ' (istəyə görə)' : '') + '" value="' + esc(t) + '"></div>'; }).join('') +
+        '<p class="hint">Düzgün variantın yanındakı dairəni seçin.</p>' +
+        '<textarea data-f="e" placeholder="İzah — səhv edən tələbəyə göstəriləcək (istəyə görə)">' + esc(x.e) + '</textarea></div>';
+    }).join('');
+  }
+  draw(); drawDirty();
+  $('et').oninput = function(){ Q.title = this.value; store(); };
+  $('em').oninput = function(){ Q.min = Math.max(0, parseInt(this.value, 10) || 0); store(); };
+  $('es').onchange = function(){ Q.shuffle = this.checked; store(); };
+  $('qs').addEventListener('input', function(ev){
+    var t = ev.target, f = t.dataset.f, card = t.closest('.qc'); if (!f || !card || f === 'a') return;
+    var x = Q.qs[+card.dataset.i];
+    if (f === 'q') x.q = t.value; else if (f === 'e') x.e = t.value; else x.o[+f.slice(1)] = t.value;
+    store();
+  });
+  $('qs').addEventListener('change', function(ev){
+    var t = ev.target; if (t.dataset.f !== 'a') return;
+    var card = t.closest('.qc'); Q.qs[+card.dataset.i].a = +t.value; store();
+    card.querySelectorAll('.ov').forEach(function(o, j){ o.classList.toggle('ok', j === +t.value); });
+  });
+  $('qs').addEventListener('click', function(ev){
+    var b = ev.target.closest('[data-act]'); if (!b) return;
+    var i = +b.closest('.qc').dataset.i, act = b.dataset.act, t;
+    if (act === 'del'){ if (!b.dataset.sure){ b.dataset.sure = 1; b.textContent = 'Sil?'; return; } Q.qs.splice(i, 1); }
+    if (act === 'up'){ t = Q.qs[i - 1]; Q.qs[i - 1] = Q.qs[i]; Q.qs[i] = t; }
+    if (act === 'dn'){ t = Q.qs[i + 1]; Q.qs[i + 1] = Q.qs[i]; Q.qs[i] = t; }
+    store(); draw();
+  });
+  app.addEventListener('focusin', function(ev){ if (ev.target.matches('textarea, input[type=text], #et')) lastF = ev.target; });
+  $('sym').addEventListener('mousedown', function(ev){ ev.preventDefault(); });
+  $('sym').addEventListener('click', function(ev){
+    var b = ev.target.closest('[data-s]'); if (!b || !lastF) return;
+    var s = lastF.selectionStart, e = lastF.selectionEnd;
+    lastF.value = lastF.value.slice(0, s) + b.dataset.s + lastF.value.slice(e);
+    lastF.focus(); lastF.setSelectionRange(s + b.dataset.s.length, s + b.dataset.s.length);
+    lastF.dispatchEvent(new Event('input', {bubbles:true}));
+  });
+  $('addq').onclick = function(){ Q.qs.push({i:U.rid(5), q:'', o:['','','',''], a:0, e:''}); store(); draw(); var c = $('qs').lastElementChild; c.scrollIntoView({behavior:'smooth', block:'center'}); c.querySelector('textarea').focus(); };
+  $('pv').onclick = function(){
+    var err = validate(Q); $('ee').textContent = err; if (err) return;
+    U.ls('snq_preview', toPublic(Q));
+    window.open(studentLink().replace('index.html#', 'index.html?pv=1#'), '_blank');
+  };
+  $('go').onclick = publishNow;
+}
+
+function renderRes(id){
+  var Q = getQ(id) || QS.filter(live)[0] || QS[0];
+  if (!Q){ sheet('<h2 class="title">Nəticələr</h2><p class="who">Hələ sınaq yoxdur.</p>'); return; }
+  var box = RS[Q.id] || {}, all = Object.keys(box).map(function(k){ return box[k]; });
+  var classes = all.map(function(x){ return x.c; }).filter(function(c, i, a){ return a.indexOf(c) === i; }).sort();
+  var fc = renderRes.fc && classes.indexOf(renderRes.fc) >= 0 ? renderRes.fc : '';
+  var rows = all.filter(function(x){ return !fc || x.c === fc; }).sort(function(a, b){
+    var ae = a.type === 'end', be = b.type === 'end'; if (ae !== be) return ae ? 1 : -1;
+    return ae ? (b.r[0] - a.r[0]) || (a.en - b.en) : b.st - a.st; });
+  var done = rows.filter(function(x){ return x.type === 'end'; }), prog = rows.length - done.length;
+  var avg = done.length ? Math.round(done.reduce(function(s, x){ return s + x.r[0] / (x.r[0] + x.r[1] + x.r[2]); }, 0) / done.length * 100) : 0;
+  var open = renderRes.open || (renderRes.open = {});
+  sheet('<div class="form"><label>Sınaq<select id="sq">' + QS.map(function(q){ return '<option value="' + q.id + '"' + (q.id === Q.id ? ' selected' : '') + '>' + esc(q.title) + (live(q) ? ' (aktiv)' : '') + '</option>'; }).join('') + '</select></label>' +
+    '<label>Sinif<select id="sc"><option value="">Hamısı</option>' + classes.map(function(c){ return '<option' + (c === fc ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select></label></div>' +
+    '<div class="kpis"><div><b>' + done.length + '</b><span>bitirdi</span></div><div><b style="color:var(--amber)">' + prog + '</b><span>indi yazır</span></div><div><b>' + (done.length ? avg + '%' : '—') + '</b><span>orta nəticə</span></div></div>' +
+    (rows.length ? '<div class="list">' + rows.map(function(x){
+      var flags = (x.tb ? '<span class="flag">' + x.tb + ' dəfə çıxıb</span>' : '') + (x.tu ? '<span class="flag">vaxt bitdi</span>' : '');
+      if (x.type !== 'end') return '<details class="st prog"><summary><span class="nm">' + esc(x.n + ' ' + x.sn) + flags + '</span><span class="pc">yazır…<small>' + U.hm(x.st) + '-dan</small></span><span class="inf">' + esc(x.c) + ' · № ' + esc(x.no) + '</span></summary></details>';
+      var tot = x.r[0] + x.r[1] + x.r[2], pct = Math.round(x.r[0] / tot * 100), dur = Math.max(1, Math.round((x.en - x.st) / 60000));
+      var det = (x.ans || []).map(function(a){
+        return '<div class="' + (a[2] == null ? '' : a[4] ? 'ok' : 'no') + '"><b>' + a[0] + '.</b> ' + esc(a[1]) + '<br>Cavab: ' + (a[2] == null ? 'boş' : esc(a[2])) + (a[4] ? ' ✓' : ' · Düz: ' + esc(a[3])) + '</div>';
+      }).join('');
+      return '<details class="st" data-sid="' + x.sid + '"' + (open[x.sid] ? ' open' : '') + '><summary><span class="nm">' + esc(x.n + ' ' + x.sn) + flags + '</span>' +
+        '<span class="pc">' + pct + '%<small>' + x.r[0] + ' düz · ' + x.r[1] + ' səhv · ' + x.r[2] + ' boş</small></span>' +
+        '<span class="inf">' + esc(x.c) + ' · № ' + esc(x.no) + ' · ' + U.day(x.en) + ' · ' + dur + ' dəq</span></summary>' +
+        '<div class="body"><p class="hint" style="margin-top:10px">Nömrələr redaktordakı sual nömrəsidir</p><div class="ans">' + det + '</div>' +
+        '<button class="btn sm danger" style="margin-top:10px" data-rm="' + x.sid + '">Bu nəticəni sil</button></div></details>';
+    }).join('') + '</div>' : '<p class="note center" style="margin:30px 0">Hələ heç kim başlamayıb. Tələbə sınağa girən kimi burada görünəcək.</p>') +
+    '<button class="btn ghost" id="cp" style="margin-top:6px">Cədvəli kopyala (Excel / Sheets üçün)</button>' +
+    '<p class="note">Nəticələr onlayn kanalda 12 saat qalır. Paneli açdığınız an hamısı telefonunuza köçür və burada qalır — sınaq günü paneli ən azı bir dəfə açın.</p>');
+  $('sq').onchange = function(){ location.hash = 'res/' + this.value; };
+  $('sc').onchange = function(){ renderRes.fc = this.value; route(); };
+  app.querySelectorAll('details[data-sid]').forEach(function(d){ d.ontoggle = function(){ open[d.dataset.sid] = d.open; }; });
+  app.querySelectorAll('[data-rm]').forEach(function(b){ b.onclick = function(){
+    if (!b.dataset.sure){ b.dataset.sure = 1; b.textContent = 'Əminsiniz? Yenə basın'; return; }
+    delete box[b.dataset.rm]; saveRS(); route();
+  }; });
+  $('cp').onclick = function(){
+    U.copy('Ad\tSoyad\tSinif\tNömrə\tDüz\tSəhv\tBoş\tFaiz\tÇıxma\tBitirdi\n' + done.map(function(x){
+      var tot = x.r[0] + x.r[1] + x.r[2]; return [x.n, x.sn, x.c, x.no, x.r[0], x.r[1], x.r[2], Math.round(x.r[0] / tot * 100) + '%', x.tb, U.day(x.en)].join('\t');
+    }).join('\n'), this);
+  };
+}
+
+function renderLink(){
+  var link = studentLink(), msg = 'Riyaziyyat sınağına bu linkdən girin:\n' + link;
+  sheet('<h2 class="title">Tələbə linki</h2>' +
+    '<p class="who">Bu link <b>dəyişmir</b>. Bir dəfə tələbələrə göndərin — hansı sınağı aktiv etsəniz, onlar həmin linkdə onu görəcək.</p>' +
+    '<div class="linkbox">' + esc(link) + '</div>' +
+    '<div class="row"><button class="btn" id="cp">Linki kopyala</button><a class="btn ghost" href="https://wa.me/?text=' + encodeURIComponent(msg) + '" target="_blank" rel="noopener">WhatsApp-da göndər</a></div>' +
+    '<div class="row"><a class="btn ghost" href="https://t.me/share/url?url=' + encodeURIComponent(link) + '" target="_blank" rel="noopener">Telegram-da göndər</a><a class="btn ghost" href="' + esc(link) + '" target="_blank" rel="noopener">Tələbə kimi aç</a></div>' +
+    '<p class="note">Diqqət: "Tələbə kimi aç" ilə sınağı bitirsəniz, bu telefon həmin sınağı yenidən yaza bilməz. Sınamaq üçün redaktordakı "Önizləmə"dən istifadə edin.</p>');
+  $('cp').onclick = function(){ U.copy(link, this); };
+}
+
+function renderBackup(){
+  sheet('<h2 class="title">Ehtiyat və köçürmə</h2>' +
+    '<p class="who">Sınaqlarınız, nəticələriniz və gizli açarınız yalnız bu telefonun brauzerində saxlanır. Telefonu dəyişsəniz və ya brauzeri təmizləsəniz, ehtiyat kodu ilə hamısını geri qaytara bilərsiniz.</p>' +
+    '<button class="btn" id="mk" style="margin-top:18px">Ehtiyat kodunu yarat və kopyala</button>' +
+    '<p class="note">Kodu Telegram-da "Saved Messages"-ə yapışdırıb saxlayın. Kodu heç kimə göndərməyin — onunla nəticələri oxumaq mümkündür.</p>' +
+    '<hr><h3>Koddan bərpa et</h3><textarea id="rc" placeholder="Ehtiyat kodunu bura yapışdırın"></textarea>' +
+    '<p class="err" id="re"></p><button class="btn ghost" id="rb">Bərpa et</button>');
+  $('mk').onclick = function(){ var b = this; U.pack({t:T, q:QS, r:RS}).then(function(c){ U.copy('SNQ1:' + c, b); }); };
+  $('rb').onclick = function(){
+    var v = $('rc').value.trim().replace(/^SNQ1:/, '');
+    if (!v){ $('re').textContent = 'Kodu yapışdırın.'; return; }
+    var b = this;
+    if (!b.dataset.sure){ b.dataset.sure = 1; b.textContent = 'Bu telefondakı məlumat əvəz olunacaq. Yenə basın'; return; }
+    U.unpack(v).then(function(d){
+      if (!d.t || !d.t.topic) throw 0;
+      T = d.t; QS = d.q || []; RS = d.r || {}; seen = {};
+      U.ls('snq_t', T); saveQS(); saveRS(); U.toast('✓ Bərpa olundu'); location.hash = 'list';
+    }).catch(function(){ $('re').textContent = 'Kod oxunmadı. Tam kopyaladığınızdan əmin olun.'; });
+  };
+}
+
+/* ---------- yönləndirmə ---------- */
+function route(){
+  var h = location.hash.slice(1) || 'list', p = h.split('/');
+  view = p[0];
+  document.querySelectorAll('#nav a').forEach(function(a){ a.classList.toggle('on', a.dataset.r === view || (view === 'edit' && a.dataset.r === 'list')); });
+  if (view === 'edit' && getQ(p[1])) return renderEdit(getQ(p[1]));
+  if (view === 'res') return renderRes(p[1]);
+  if (view === 'link') return renderLink();
+  if (view === 'backup') return renderBackup();
+  view = 'list'; renderList();
+}
+window.addEventListener('hashchange', function(){ window.scrollTo(0, 0); route(); });
+document.addEventListener('visibilitychange', function(){ if (!document.hidden) poll(); });
+
+function start(){ route(); poll(); pollT = setInterval(poll, 8000); }
+if (!window.crypto || !crypto.subtle) sheet('<h2 class="title">Brauzer uyğun deyil</h2><p class="who">Chrome-un son versiyası ilə, https linki ilə açın.</p>');
+else if (T && T.topic) start();
+else U.genKeys().then(function(k){ T = {topic:'snq-' + U.rid(18), pub:k.pub, priv:k.priv, created:Date.now()}; U.ls('snq_t', T); start(); });
+}
+</script>
+</body>
+</html>

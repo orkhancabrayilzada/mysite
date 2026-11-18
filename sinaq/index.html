@@ -3,543 +3,178 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Riyaziyyat sınağı</title>
+<title>Onlayn sınaq</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Rubik:wght@500;600;700&display=swap">
-<style>
-/* VOICE: calm, exam-room serious, friendly for students and quick for the teacher
-   IDEA: a squared school notebook page with a red margin line, checked in teacher's red pen
-   PICTURE: the working sheet itself; results as an answer strip of numbered boxes
-   COLOUR and TYPE: white paper, ink blue, red pen, green ticks; Rubik titles + Inter body
-   LAYOUT: one centred column, big tap targets, phone first */
-:root{--bg:#eef2f9;--paper:#fff;--ink:#101a3a;--mute:#5a6482;--line:#dbe3f2;--grid:rgba(40,90,200,.08);--red:#d7362b;--green:#178a4a;--blue:#1d4fd8;--soft:#f3f6fd;--redsoft:#fdecea;--greensoft:#e7f6ee;--amber:#9a6200;--ambersoft:#fff4dc}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0b1124;--paper:#131b35;--ink:#e8ecf8;--mute:#9aa4c2;--line:#26314f;--grid:rgba(140,170,255,.06);--red:#ff6b5e;--green:#4fd18a;--blue:#86a8ff;--soft:#1a2444;--redsoft:#3a1d22;--greensoft:#14322a;--amber:#ffc35c;--ambersoft:#3a2e14}}
-:root[data-theme=dark]{--bg:#0b1124;--paper:#131b35;--ink:#e8ecf8;--mute:#9aa4c2;--line:#26314f;--grid:rgba(140,170,255,.06);--red:#ff6b5e;--green:#4fd18a;--blue:#86a8ff;--soft:#1a2444;--redsoft:#3a1d22;--greensoft:#14322a;--amber:#ffc35c;--ambersoft:#3a2e14}
-*{box-sizing:border-box;min-width:0}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip;-webkit-tap-highlight-color:transparent}
-h1,h2,h3{font-family:Rubik,Inter,sans-serif;line-height:1.1;margin:0;text-wrap:balance}
-a{color:var(--blue)}
-.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px max(4vw,16px);background:var(--ink);color:var(--paper)}
-.top h1{font-size:18px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.timer{font:600 18px/1 Rubik,sans-serif;font-variant-numeric:tabular-nums;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.14);white-space:nowrap}
-.timer.warn{background:var(--red);color:#fff}
-.timer[hidden]{display:none}
-main{padding:clamp(16px,4vw,40px) max(3vw,10px) 60px}
-.sheet{max-width:760px;margin:0 auto;background:var(--paper);border-radius:14px;box-shadow:0 1px 0 var(--line),0 12px 40px -18px rgba(16,26,58,.35);padding:clamp(22px,5vw,44px) clamp(16px,5vw,44px) clamp(22px,5vw,44px) clamp(32px,7vw,64px);position:relative;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px}
-.sheet::before{content:"";position:absolute;top:0;bottom:0;left:clamp(18px,4.5vw,42px);width:2px;background:var(--red);opacity:.55}
-.title{font-size:clamp(28px,6vw,42px);font-weight:700}
-.back{display:inline-block;margin-bottom:14px;font-weight:600;text-decoration:none;padding:6px 0}
-.meta{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 20px}
-.meta span{background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:14px;font-weight:500}
-.rules{margin:0 0 24px;padding-left:20px;color:var(--mute)}
-.rules li{margin:4px 0}.rules b{color:var(--ink)}
-.form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
-label{display:grid;gap:6px;font-size:14px;font-weight:600}
-input,textarea{font:16px Inter,sans-serif;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;min-height:48px;width:100%}
-textarea{resize:vertical;min-height:70px;line-height:1.45}
-input:focus,textarea:focus,button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
-.full{grid-column:1/-1}
-.btn{font:600 17px Rubik,sans-serif;background:var(--blue);color:#fff;border:0;border-radius:12px;min-height:52px;padding:12px 20px;width:100%;cursor:pointer;text-align:center;text-decoration:none;display:inline-grid;place-items:center;transition:transform .12s}
-.btn:active{transform:scale(.98)}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.btn.ghost{background:transparent;color:var(--blue);border:1.5px solid var(--blue)}
-.btn.sm{min-height:44px;font-size:15px;padding:8px 14px;width:auto}
-.btn.danger{background:transparent;color:var(--red);border:1.5px solid var(--red)}
-.err{color:var(--red);font-size:14px;min-height:20px;margin:0;font-weight:600}
-.note{color:var(--mute);font-size:14px;margin:12px 0 0}
-.center{text-align:center}
-.prog{display:flex;align-items:center;gap:12px;font-weight:600;font-size:14px;color:var(--mute);margin-bottom:20px;white-space:nowrap}
-.bar{flex:1;height:8px;background:var(--soft);border-radius:9px;overflow:hidden;border:1px solid var(--line)}
-.bar i{display:block;height:100%;background:var(--blue);border-radius:9px;transition:width .3s}
-.qt{font-size:clamp(21px,4.6vw,29px);font-weight:600;margin-bottom:22px;white-space:pre-wrap}
-.opts{display:grid;gap:10px;margin-bottom:20px}
-.opt{display:flex;align-items:center;gap:14px;text-align:left;font:500 18px Inter,sans-serif;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;min-height:56px;cursor:pointer}
-.opt b{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--line);font:600 15px Rubik,sans-serif}
-.opt.on{border-color:var(--blue);background:var(--soft);box-shadow:0 0 0 1px var(--blue)}
-.opt.on b{background:var(--blue);border-color:var(--blue);color:#fff}
-.alert{max-width:760px;margin:0 auto 14px;background:var(--redsoft);color:var(--red);border-radius:10px;padding:10px 14px;font-weight:600;font-size:14px}
-.who{color:var(--mute);font-weight:500;margin:8px 0 0}
-.score{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;margin:20px 0 6px}
-.score .big{font:700 clamp(56px,14vw,88px)/1 Rubik,sans-serif;color:var(--green)}
-.score .big small{font-size:.38em;margin-left:6px}
-.score .rest{font:600 20px Rubik,sans-serif}
-.w{color:var(--red)}
-.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px;margin:20px 0 8px}
-.strip span{display:grid;place-items:center;height:42px;border-radius:8px;font:600 15px Rubik,sans-serif;border:1.5px solid var(--line);color:var(--mute)}
-.strip .ok{background:var(--greensoft);border-color:var(--green);color:var(--green)}
-.strip .no{background:var(--redsoft);border-color:var(--red);color:var(--red)}
-.legend{font-size:13px;color:var(--mute);margin:0 0 26px}
-h3{font-size:22px;margin:8px 0 14px}
-.ex{border-top:1px solid var(--line);padding:16px 0}
-.ex .n{font-size:13px;font-weight:600;color:var(--mute)}
-.ex p{margin:6px 0}
-.ex .q{font-weight:600;font-size:17px;white-space:pre-wrap}
-.ex .yours{color:var(--red)}
-.ex .yours s{text-decoration-thickness:2px}
-.ex .right{color:var(--green);font-weight:600}
-.ex .why{background:var(--soft);border-left:3px solid var(--blue);padding:10px 12px;border-radius:0 8px 8px 0;margin-top:10px;white-space:pre-wrap}
-.sent{font-size:14px;font-weight:600;padding:10px 14px;border-radius:10px;background:var(--soft);margin:0 0 6px}
-.sent:empty{display:none}
-.sent.ok{background:var(--greensoft);color:var(--green)}
-.sent.bad{background:var(--redsoft);color:var(--red)}
-hr{border:0;border-top:1px solid var(--line);margin:26px 0}
-/* teacher */
-.list{display:grid;gap:12px;margin:20px 0}
-.card{border:1.5px solid var(--line);border-radius:12px;padding:14px;background:var(--paper)}
-.card h4{margin:0 0 4px;font:600 19px Rubik,sans-serif}
-.card .sub{color:var(--mute);font-size:14px;margin:0 0 12px}
-.acts{display:flex;flex-wrap:wrap;gap:8px}
-.qc{border:1.5px solid var(--line);border-radius:12px;padding:14px;margin:0 0 14px;background:var(--paper);display:grid;gap:10px}
-.qh{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.qh b{font:600 16px Rubik,sans-serif}
-.qh .acts button{min-width:44px}
-.ov{display:flex;align-items:center;gap:8px}
-.ov input[type=radio]{width:24px;height:24px;min-height:0;flex:none;accent-color:var(--green)}
-.ov input[type=text]{flex:1}
-.ov.ok input[type=text]{border-color:var(--green);background:var(--greensoft)}
-.hint{font-size:13px;color:var(--mute);margin:0}
-.chk{display:flex;align-items:center;gap:10px;font-weight:500}
-.chk input{width:22px;height:22px;min-height:0;flex:none}
-.sym{position:sticky;top:58px;z-index:3;display:flex;gap:6px;overflow-x:auto;padding:8px 0;margin:10px 0;background:var(--paper)}
-.sym button{flex:none;min-width:44px;height:44px;border:1.5px solid var(--line);border-radius:10px;background:var(--soft);color:var(--ink);font:600 17px Inter,sans-serif;cursor:pointer}
-.linkbox{word-break:break-all;background:var(--soft);border:1px dashed var(--line);border-radius:10px;padding:12px;font-size:13px;margin:10px 0;max-height:120px;overflow:auto}
-.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:10px}
-.live{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--mute);margin:10px 0}
-.live i{width:10px;height:10px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
-.live.bad i{background:var(--red);animation:none}
-@keyframes pulse{50%{opacity:.25}}
-.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 20px}
-.kpis div{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:12px}
-.kpis b{display:block;font:700 30px/1.1 Rubik,sans-serif}
-.kpis span{font-size:13px;color:var(--mute)}
-.st{border:1.5px solid var(--line);border-radius:12px;background:var(--paper);overflow:hidden}
-.st summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:12px 14px;align-items:center}
-.st summary::-webkit-details-marker{display:none}
-.st .nm{font:600 17px Rubik,sans-serif}
-.st .inf{font-size:13px;color:var(--mute);grid-column:1}
-.st .pc{grid-row:1/3;grid-column:2;font:700 24px Rubik,sans-serif;text-align:right;white-space:nowrap}
-.st .pc small{display:block;font:500 12px Inter,sans-serif;color:var(--mute)}
-.st.prog .pc{color:var(--amber);font-size:15px}
-.st .body{padding:0 14px 14px;border-top:1px solid var(--line)}
-.flag{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--ambersoft);color:var(--amber);margin-left:6px}
-.ans{display:grid;gap:6px;margin-top:10px;font-size:14px}
-.ans div{padding:8px 10px;border-radius:8px;background:var(--soft)}
-.ans .ok{background:var(--greensoft)}.ans .no{background:var(--redsoft)}
-@media(max-width:600px){.form,.row{grid-template-columns:minmax(0,1fr)}.opt{font-size:17px}.kpis b{font-size:24px}}
-@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="top"><h1 id="hd">Sınaq</h1><div class="timer" id="timer" hidden>00:00</div></header>
+<header class="top"><div class="bar1"><h1 id="hd">Onlayn sınaq</h1><div class="timer" id="timer" hidden>00:00</div></div></header>
 <main><div id="warn"></div><div id="app"><section class="sheet"><p>Yüklənir…</p></section></div></main>
+<script src="core.js"></script>
 <script>
 {
-var NTFY = 'https://ntfy.sh/';
-var SYM = ['²','³','√','π','·','×',':','−','±','°','≤','≥','≠','∠','△','½','¼','∞','₁','₂','ⁿ','(',')'];
-var SAMPLE = {title:'Riyaziyyat sınağı', min:30, shuffle:true, qs:[
-  {q:'3x − 7 = 11 tənliyini həll edin.', o:['x = 4','x = 6','x = 18','x = 5'], a:1, e:'3x = 11 + 7 = 18, buradan x = 18 : 3 = 6.'},
-  {q:'2/3 + 3/4 cəmini tapın.', o:['5/7','5/12','17/12','6/7'], a:2, e:'Ortaq məxrəc 12-dir: 8/12 + 9/12 = 17/12. Surətlər və məxrəclər ayrı-ayrılıqda toplanmır.'},
-  {q:'Hansı ədədin 25%-i 40-a bərabərdir?', o:['10','100','160','65'], a:2, e:'25% = 1/4. Ədədin dörddə biri 40-dırsa, ədəd 40 · 4 = 160-dır.'},
-  {q:'Uzunluğu 8 sm, eni 5 sm olan düzbucaqlının perimetri neçədir?', o:['13 sm','26 sm','40 sm','20 sm'], a:1, e:'P = 2 · (a + b) = 2 · (8 + 5) = 26 sm. 40 isə sahədir (sm²).'},
-  {q:'(−3)² − 2 · (−4) ifadəsinin qiymətini tapın.', o:['1','−17','17','−1'], a:2, e:'(−3)² = 9, 2 · (−4) = −8. 9 − (−8) = 9 + 8 = 17.'},
-  {q:'√144 + √81 = ?', o:['15','21','225','25'], a:1, e:'√144 = 12, √81 = 9, cəmi 21. Kökləri toplamaq ədədləri toplayıb kök almaqla eyni deyil.'},
-  {q:'Üçbucağın iki bucağı 50° və 60°-dir. Üçüncü bucağı tapın.', o:['70°','80°','110°','90°'], a:0, e:'Üçbucağın daxili bucaqlarının cəmi 180°-dir: 180° − 50° − 60° = 70°.'},
-  {q:'2x + 5 > 13 bərabərsizliyini həll edin.', o:['x > 9','x < 4','x > 4','x > 8'], a:2, e:'2x > 8, buradan x > 4. Müsbət ədədə böləndə işarə dəyişmir.'},
-  {q:'4; 7; 10; … ardıcıllığının 10-cu həddini tapın.', o:['31','34','40','28'], a:0, e:'d = 3. aₙ = a₁ + (n − 1) · d = 4 + 9 · 3 = 31.'},
-  {q:'Qiyməti 200 AZN olan malın qiyməti 15% endirildi. Yeni qiymət neçədir?', o:['185 AZN','30 AZN','170 AZN','175 AZN'], a:2, e:'200-ün 15%-i = 30 AZN. 200 − 30 = 170 AZN.'}
-]};
+var U = SNQ, $ = U.$, esc = U.esc;
+var app = $('app'), timerEl = $('timer'), warnEl = $('warn'), hd = $('hd');
+var TOPIC = (location.hash.slice(1) || new URLSearchParams(location.search).get('k') || '').trim();
+var PREVIEW = /[?&]pv=1/.test(location.search);
+var Z = null, S = null, tick = null, picked = null, busy = false, retryT = null, waitT = null;
 
-var app = document.getElementById('app'), timerEl = document.getElementById('timer'), warnEl = document.getElementById('warn'), hd = document.getElementById('hd');
-var LET = 'ABCDEF';
-
-/* ---------- köməkçilər ---------- */
-function $(id){ return document.getElementById(id); }
-function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-function ls(k, v){ try { if (v === undefined) return JSON.parse(localStorage.getItem(k)); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch(e){ return null; } }
-function rid(n){ var a = new Uint8Array(n), s = ''; crypto.getRandomValues(a); for (var i = 0; i < n; i++) s += 'abcdefghijkmnpqrstuvwxyz23456789'[a[i] % 32]; return s; }
-function shuffle(a){ a = a.slice(); for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
-function range(n){ var r = []; for (var i = 0; i < n; i++) r.push(i); return r; }
-function mmss(sec){ sec = Math.max(0, Math.round(sec)); return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0'); }
-function hm(t){ var d = new Date(t); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
-function day(t){ var d = new Date(t); return String(d.getDate()).padStart(2,'0') + '.' + String(d.getMonth()+1).padStart(2,'0') + ' ' + hm(t); }
-function b64u(u8){ var s = ''; for (var i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
-function ub64u(s){ s = s.replace(/-/g,'+').replace(/_/g,'/'); while (s.length % 4) s += '='; var b = atob(s), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
-function pack(obj){
-  var bytes = new TextEncoder().encode(JSON.stringify(obj));
-  if (!window.CompressionStream) return Promise.resolve('p' + b64u(bytes));
-  return new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer().then(function(b){ return 'z' + b64u(new Uint8Array(b)); });
-}
-function unpack(str){
-  var bytes = ub64u(str.slice(1));
-  var p = str[0] === 'z' ? new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer().then(function(b){ return new Uint8Array(b); }) : Promise.resolve(bytes);
-  return p.then(function(u){ return JSON.parse(new TextDecoder().decode(u)); });
-}
-function copy(text, btn){
-  var done = function(){ var t = btn.textContent; btn.textContent = 'Kopyalandı ✓'; setTimeout(function(){ btn.textContent = t; }, 1800); };
-  if (navigator.clipboard) navigator.clipboard.writeText(text).then(done).catch(fallback); else fallback();
-  function fallback(){ var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch(e){} ta.remove(); }
-}
-function base(){ return location.href.split('#')[0]; }
-
-/* =====================================================================
-   ŞAGİRD HİSSƏSİ
-   ===================================================================== */
-var Z = null, S = null, SKEY = '', tick = null, picked = null, busy = false, PREVIEW = false;
-
-function left(){ return Z.m * 60 - (Date.now() - S.start) / 1000; }
-function sSave(){ if (!PREVIEW) ls(SKEY, S); }
+function key(id){ return 'snq_s_' + TOPIC + '_' + id; }
+function save(){ if (!PREVIEW) U.ls(key(Z.id), S); }
 function who(){ return S.name + ' ' + S.surname; }
+function left(){ return Z.m * 60 - (Date.now() - S.start) / 1000; }
+function correct(qi){ var q = Z.q[qi]; return U.reveal(Z.id, q.i, q.a, q.o.length); }
 function score(){
   var c = 0, w = 0, b = 0;
-  S.answers.forEach(function(x){ if (x[1] == null) b++; else if (x[1] === Z.q[x[0]].a) c++; else w++; });
+  S.answers.forEach(function(x){ if (x[1] == null) b++; else if (x[1] === correct(x[0])) c++; else w++; });
   return {c:c, w:w, b:b, pct: Math.round(c / Z.q.length * 100)};
 }
-function publish(type){
-  if (PREVIEW || !Z.k) return Promise.resolve(true);
-  var r = score(), p = {v:1, type:type, qz:Z.i, sid:S.sid, n:S.name, sn:S.surname, c:S.cls, no:S.num, st:S.start, en:S.end || null, tb:S.tabs || 0, tu:!!S.timeUp};
-  var line;
-  if (type === 'end'){ p.ans = S.answers; p.r = [r.c, r.w, r.b]; line = '📝 ' + who() + ' (' + S.cls + ', №' + S.num + ') — ' + r.c + '/' + Z.q.length + ' düz, ' + r.pct + '%'; }
-  else line = '🟢 ' + who() + ' (' + S.cls + ', №' + S.num + ') sınağa başladı';
-  return fetch(NTFY + Z.k, {method:'POST', body: line + '\n§' + JSON.stringify(p)}).then(function(res){ return res.ok; }).catch(function(){ return false; });
-}
+function sheet(html){ app.innerHTML = '<section class="sheet">' + html + '</section>'; window.scrollTo(0, 0); }
 
-function studentStart(z, preview){
-  Z = z; PREVIEW = preview; SKEY = 'snq_s_' + Z.i;
-  hd.textContent = Z.t; document.title = Z.t;
-  S = PREVIEW ? null : ls(SKEY);
-  if (S && S.end) { renderResult(); if (!S.sentEnd) sendEnd(); }
-  else if (S && S.start){ if (left() <= 0) timeUp(); else { startTimer(); renderQ(); } }
-  else renderStart();
+/* ---------- yükləmə ---------- */
+function boot(){
+  if (!TOPIC){ sheet('<h2 class="title">Link natamamdır</h2><p class="who">Sınaq linkini müəlliminizdən yenidən istəyin.</p>'); return; }
+  if (!window.crypto || !crypto.subtle){ sheet('<h2 class="title">Brauzer uyğun deyil</h2><p class="who">Chrome və ya Safari-nin son versiyası ilə açın.</p>'); return; }
+  if (PREVIEW && U.ls('snq_preview')){ Z = U.ls('snq_preview'); hd.textContent = Z.t; renderStart(); return; }
+  var curId = U.ls('snq_cur_' + TOPIC), cur = curId && U.ls(key(curId));
+  if (cur && !cur.end && !PREVIEW){ Z = cur.z; S = cur; resume(); return; }
+  U.readChannel(TOPIC).then(U.activeQuiz).then(function(z){
+    if (z && !PREVIEW){
+      var s = U.ls(key(z.id));
+      if (s && s.end){ Z = s.z; S = s; showResult(); return; }
+    }
+    if (z){ Z = z; hd.textContent = z.t; document.title = z.t; renderStart(); return; }
+    if (cur && cur.end){ Z = cur.z; S = cur; showResult(); return; }
+    renderWaiting();
+  }).catch(function(){
+    if (cur && cur.end){ Z = cur.z; S = cur; showResult(); return; }
+    sheet('<h2 class="title">Bağlantı alınmadı</h2><p class="who">İnterneti yoxlayın. Səhifə özü yenidən cəhd edəcək.</p><button class="btn" style="margin-top:20px" id="rt">İndi yenidən yoxla</button>');
+    $('rt').onclick = boot; clearTimeout(waitT); waitT = setTimeout(boot, 12000);
+  });
 }
+function renderWaiting(){
+  sheet('<div class="wait"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="var(--soft)" stroke="var(--line)" stroke-width="3"/><path d="M60 30v32l20 12" stroke="var(--blue)" stroke-width="7" stroke-linecap="round" fill="none"/></svg>' +
+    '<h2 class="title">Hazırda aktiv sınaq yoxdur</h2><p class="who">Müəllim sınağı açan kimi bu səhifə özü yenilənəcək.</p></div>');
+  clearTimeout(waitT); waitT = setTimeout(boot, 20000);
+}
+function resume(){ hd.textContent = Z.t; document.title = Z.t; if (left() <= 0) timeUp(); else { startTimer(); renderQ(); flush(); } }
+function showResult(){ hd.textContent = Z.t; document.title = Z.t; renderResult(); flush(); }
 
+/* ---------- müəllimə göndərmə (növbə ilə, uğursuz olsa təkrar) ---------- */
+function payload(type){
+  var p = {type:type, qz:Z.id, sid:S.sid, n:S.name, sn:S.surname, c:S.cls, no:S.num, st:S.start, en:S.end || null, tb:S.tabs || 0, tu:!!S.timeUp};
+  if (type === 'end'){
+    var r = score(); p.r = [r.c, r.w, r.b];
+    p.ans = S.answers.map(function(x){ var q = Z.q[x[0]], k = correct(x[0]); return [x[0] + 1, q.q.slice(0, 140), x[1] == null ? null : q.o[x[1]], q.o[k], x[1] === k ? 1 : 0]; });
+  }
+  return p;
+}
+function send(type){ return U.seal(Z.pk, payload(type)).then(function(s){ return U.publish(TOPIC, 'R', s); }).catch(function(){ return false; }); }
+function flush(){
+  if (PREVIEW || !S) return;
+  clearTimeout(retryT);
+  var job = !S.sentStart ? 'start' : (S.end && !S.sentEnd ? 'end' : null);
+  if (!job) return status();
+  status();
+  send(job).then(function(ok){
+    if (ok){ if (job === 'start') S.sentStart = true; else S.sentEnd = true; save(); flush(); }
+    else { status(); retryT = setTimeout(flush, 15000); }
+  });
+}
+function status(){
+  var e = $('sent'); if (!e || !S.end) return;
+  if (PREVIEW){ e.className = 'sent'; e.textContent = 'Önizləmə: nəticə müəllimə göndərilmir.'; return; }
+  if (S.sentEnd){ e.className = 'sent ok'; e.textContent = '✓ Nəticəniz müəllimə göndərildi.'; }
+  else { e.className = 'sent bad'; e.textContent = 'Nəticə göndərilir… İnternet yoxdursa, səhifəni bağlamayın — özü təkrar cəhd edir.'; }
+}
+window.addEventListener('online', flush);
+
+/* ---------- giriş ---------- */
 function renderStart(){
   timerEl.hidden = true;
-  app.innerHTML = '<section class="sheet">' +
-    (PREVIEW ? '<p class="sent" style="margin-bottom:14px">Önizləmə rejimi: nəticə göndərilmir.</p>' : '') +
+  sheet((PREVIEW ? '<p class="sent" style="margin-bottom:14px">Önizləmə rejimi: nəticə göndərilmir.</p>' : '') +
     '<h2 class="title">' + esc(Z.t) + '</h2>' +
     '<div class="meta"><span>' + Z.q.length + ' sual</span><span>' + Z.m + ' dəqiqə</span><span>Hər sualın bir düz cavabı var</span></div>' +
-    '<ul class="rules">' +
-      '<li><b>Cavabı təsdiqlədikdən sonra geri qayıtmaq olmur.</b></li>' +
-      '<li>Səhifəni yeniləsəniz, qaldığınız sualdan davam edəcəksiniz.</li>' +
-      '<li>Başqa proqrama və ya səhifəyə keçmək qeydə alınır və müəllimə bildirilir.</li>' +
-      '<li>Vaxt bitəndə sınaq avtomatik tamamlanır, cavablanmamış suallar boş sayılır.</li>' +
-    '</ul>' +
+    '<ul class="rules"><li><b>Cavabı təsdiqlədikdən sonra geri qayıtmaq olmur.</b></li>' +
+    '<li>Səhifəni yeniləsəniz, qaldığınız sualdan davam edəcəksiniz. Vaxt dayanmır.</li>' +
+    '<li>Başqa proqrama və ya səhifəyə keçmək qeydə alınır və müəllimə bildirilir.</li>' +
+    '<li>Vaxt bitəndə sınaq avtomatik tamamlanır, cavablanmamış suallar boş sayılır.</li></ul>' +
     '<form id="f" class="form" novalidate>' +
-      '<label>Ad<input id="fn" autocomplete="given-name" maxlength="40"></label>' +
-      '<label>Soyad<input id="ln" autocomplete="family-name" maxlength="40"></label>' +
-      '<label>Sinif<input id="cl" placeholder="məs. 9A" maxlength="10"></label>' +
-      '<label>Nömrə<input id="nm" inputmode="numeric" placeholder="Jurnal və ya telefon nömrəsi" maxlength="20"></label>' +
-      '<p class="err full" id="er"></p>' +
-      '<button class="btn full" type="submit">Sınağa başla</button>' +
-    '</form></section>';
+    '<label>Ad<input id="fn" autocomplete="given-name" maxlength="40"></label>' +
+    '<label>Soyad<input id="ln" autocomplete="family-name" maxlength="40"></label>' +
+    '<label>Sinif<input id="cl" placeholder="məs. 9A" maxlength="10"></label>' +
+    '<label>Nömrə<input id="nm" inputmode="numeric" placeholder="Jurnal və ya telefon nömrəsi" maxlength="20"></label>' +
+    '<p class="err full" id="er"></p><button class="btn full" type="submit">Sınağa başla</button></form>');
   $('f').onsubmit = function(ev){
     ev.preventDefault();
     var v = function(id){ return $(id).value.trim(); };
-    var d = {name: v('fn'), surname: v('ln'), cls: v('cl'), num: v('nm')};
+    var d = {name:v('fn'), surname:v('ln'), cls:v('cl'), num:v('nm')};
     if (!d.name || !d.surname || !d.cls || !d.num){ $('er').textContent = 'Zəhmət olmasa bütün xanaları doldurun.'; return; }
-    var N = Z.q.length, order = Z.s ? shuffle(range(N)) : range(N), perm = {};
-    order.forEach(function(qi){ var n = Z.q[qi].o.length; perm[qi] = Z.s ? shuffle(range(n)) : range(n); });
-    S = {sid: rid(10), name:d.name, surname:d.surname, cls:d.cls, num:d.num, order:order, perm:perm, answers:[], start:Date.now(), end:null, tabs:0, sentEnd:false};
-    sSave(); publish('start');
-    startTimer(); renderQ();
+    var N = Z.q.length, order = Z.s ? U.shuffle(U.range(N)) : U.range(N), perm = {};
+    order.forEach(function(qi){ var n = Z.q[qi].o.length; perm[qi] = Z.s ? U.shuffle(U.range(n)) : U.range(n); });
+    S = {sid:U.rid(10), name:d.name, surname:d.surname, cls:d.cls, num:d.num, order:order, perm:perm, answers:[], start:Date.now(), end:null, tabs:0, sentStart:false, sentEnd:false, z:Z};
+    if (!PREVIEW){ save(); U.ls('snq_cur_' + TOPIC, Z.id); }
+    startTimer(); renderQ(); flush();
   };
 }
 
+/* ---------- suallar ---------- */
 function renderQ(){
   var N = Z.q.length, i = S.answers.length;
   if (i >= N) return finish();
   var qi = S.order[i], q = Z.q[qi];
   picked = null; busy = false;
-  app.innerHTML = '<section class="sheet">' +
-    '<div class="prog"><span>Sual ' + (i + 1) + ' / ' + N + '</span><div class="bar"><i style="width:' + (i / N * 100) + '%"></i></div></div>' +
+  sheet('<div class="prog"><span>Sual ' + (i + 1) + ' / ' + N + '</span><div class="pbar"><i style="width:' + (i / N * 100) + '%"></i></div></div>' +
     '<h2 class="qt">' + esc(q.q) + '</h2>' +
-    '<div class="opts">' + S.perm[qi].map(function(oi, k){ return '<button type="button" class="opt" data-o="' + oi + '"><b>' + LET[k] + '</b><span>' + esc(q.o[oi]) + '</span></button>'; }).join('') + '</div>' +
+    '<div class="opts">' + S.perm[qi].map(function(oi, k){ return '<button type="button" class="opt" data-o="' + oi + '"><b>' + U.LET[k] + '</b><span>' + esc(q.o[oi]) + '</span></button>'; }).join('') + '</div>' +
     '<button class="btn" id="next" disabled>' + (i + 1 < N ? 'Təsdiqlə və növbəti sual' : 'Təsdiqlə və sınağı bitir') + '</button>' +
-    '<p class="note center">Təsdiqlədikdən sonra bu suala qayıtmaq olmayacaq.</p></section>';
+    '<p class="note center">Təsdiqlədikdən sonra bu suala qayıtmaq olmayacaq.</p>');
   var opts = app.querySelectorAll('.opt');
   opts.forEach(function(b){ b.onclick = function(){ picked = +b.dataset.o; opts.forEach(function(x){ x.classList.toggle('on', x === b); }); $('next').disabled = false; }; });
-  $('next').onclick = function(){ if (picked == null || busy) return; busy = true; S.answers.push([qi, picked]); sSave(); renderQ(); };
-  window.scrollTo(0, 0);
+  $('next').onclick = function(){ if (picked == null || busy) return; busy = true; S.answers.push([qi, picked]); save(); renderQ(); };
 }
-
 function startTimer(){
   timerEl.hidden = false; clearInterval(tick);
-  var step = function(){ var l = left(); timerEl.textContent = mmss(l); timerEl.classList.toggle('warn', l < 60); if (l <= 0){ clearInterval(tick); timeUp(); } };
+  var step = function(){ var l = left(); timerEl.textContent = U.mmss(l); timerEl.classList.toggle('warn', l < 60); if (l <= 0){ clearInterval(tick); timeUp(); } };
   step(); tick = setInterval(step, 1000);
 }
-function timeUp(){ while (S.answers.length < Z.q.length) S.answers.push([S.order[S.answers.length], null]); S.timeUp = true; sSave(); finish(); }
+function timeUp(){ while (S.answers.length < Z.q.length) S.answers.push([S.order[S.answers.length], null]); S.timeUp = true; save(); finish(); }
 function finish(){
   clearInterval(tick); timerEl.hidden = true; warnEl.innerHTML = '';
-  if (!S.end){ S.end = Date.now(); sSave(); }
-  renderResult(); if (!S.sentEnd) sendEnd();
+  if (!S.end){ S.end = Date.now(); save(); }
+  renderResult(); flush();
 }
-function sendEnd(){
-  var el = $('sent');
-  if (PREVIEW){ el.className = 'sent'; el.textContent = 'Önizləmə: nəticə göndərilmədi.'; return; }
-  if (el){ el.className = 'sent'; el.textContent = 'Nəticə müəllimə göndərilir…'; }
-  publish('end').then(function(ok){
-    S.sentEnd = ok; sSave();
-    var e = $('sent'); if (!e) return;
-    if (ok){ e.className = 'sent ok'; e.textContent = '✓ Nəticəniz müəllimə göndərildi.'; }
-    else { e.className = 'sent bad'; e.innerHTML = 'Nəticə göndərilmədi. İnterneti yoxlayın. <button class="btn ghost" id="resend" style="margin-top:8px">Yenidən göndər</button>'; $('resend').onclick = sendEnd; }
-  });
-}
+
+/* ---------- nəticə və izahlar ---------- */
 function renderResult(){
   var r = score();
-  var strip = S.answers.map(function(x, i){ var cls = x[1] == null ? '' : (x[1] === Z.q[x[0]].a ? 'ok' : 'no'); return '<span class="' + cls + '">' + (i + 1) + '</span>'; }).join('');
-  var wrong = S.answers.map(function(x, i){ return {x:x, i:i}; }).filter(function(o){ return o.x[1] !== Z.q[o.x[0]].a; });
+  var strip = S.answers.map(function(x, i){ var c = x[1] == null ? '' : (x[1] === correct(x[0]) ? 'ok' : 'no'); return '<span class="' + c + '">' + (i + 1) + '</span>'; }).join('');
+  var wrong = S.answers.map(function(x, i){ return {x:x, i:i}; }).filter(function(o){ return o.x[1] !== correct(o.x[0]); });
   var exp = wrong.map(function(o){
     var q = Z.q[o.x[0]];
     return '<div class="ex"><span class="n">Sual ' + (o.i + 1) + '</span><p class="q">' + esc(q.q) + '</p>' +
       '<p class="yours">Sizin cavab: ' + (o.x[1] == null ? 'cavab verilməyib' : '<s>' + esc(q.o[o.x[1]]) + '</s>') + '</p>' +
-      '<p class="right">Düzgün cavab: ' + esc(q.o[q.a]) + '</p>' + (q.e ? '<p class="why">' + esc(q.e) + '</p>' : '') + '</div>';
+      '<p class="right">Düzgün cavab: ' + esc(q.o[correct(o.x[0])]) + '</p>' + (q.e ? '<p class="why">' + esc(q.e) + '</p>' : '') + '</div>';
   }).join('');
-  app.innerHTML = '<section class="sheet"><h2 class="title">Nəticəniz</h2>' +
+  sheet('<h2 class="title">Nəticəniz</h2>' +
     '<p class="who">' + esc(who()) + ' · ' + esc(S.cls) + ' sinif · № ' + esc(S.num) + '</p>' +
     '<div class="score"><span class="big">' + r.c + '<small>düz</small></span><span class="rest"><span class="w">' + r.w + ' səhv</span> · ' + r.b + ' boş · ' + r.pct + '%</span></div>' +
     (S.timeUp ? '<p class="note">Vaxt bitdiyi üçün sınaq avtomatik tamamlandı.</p>' : '') +
     '<div class="strip">' + strip + '</div><p class="legend">Yaşıl — düz, qırmızı — səhv, boz — cavabsız.</p>' +
-    '<p class="sent' + (S.sentEnd ? ' ok' : '') + '" id="sent">' + (S.sentEnd ? '✓ Nəticəniz müəllimə göndərildi.' : '') + '</p>' +
-    '<hr><h3>' + (wrong.length ? 'Səhvlərin izahı' : 'Təbriklər! Bütün cavablar düzdür.') + '</h3>' + exp + '</section>';
-  window.scrollTo(0, 0);
+    '<p class="sent" id="sent"></p>' +
+    '<hr><h3>' + (wrong.length ? 'Səhvlərin izahı' : 'Təbriklər! Bütün cavablar düzdür.') + '</h3>' + exp);
+  status();
 }
+
+/* ---------- saxtakarlığa qarşı ---------- */
 document.addEventListener('visibilitychange', function(){
-  if (!S || !S.start || S.end || !Z) return;
-  if (document.hidden){ S.tabs = (S.tabs || 0) + 1; sSave(); }
+  if (!S || !S.start || S.end) return;
+  if (document.hidden){ S.tabs = (S.tabs || 0) + 1; save(); }
   else warnEl.innerHTML = '<div class="alert">Diqqət: sınaq səhifəsindən çıxdınız (' + S.tabs + ' dəfə). Bu, müəllimə bildiriləcək.</div>';
 });
-window.addEventListener('online', function(){ if (S && S.end && !S.sentEnd) sendEnd(); });
 
-/* =====================================================================
-   MÜƏLLİM HİSSƏSİ
-   ===================================================================== */
-var TKEY = 'snq_teacher', pollT = null;
-function quizzes(){ return ls(TKEY) || []; }
-function saveQuizzes(a){ ls(TKEY, a); }
-function getQ(id){ return quizzes().filter(function(q){ return q.id === id; })[0]; }
-function putQ(q){ var a = quizzes(), i = a.findIndex(function(x){ return x.id === q.id; }); if (i < 0) a.unshift(q); else a[i] = q; saveQuizzes(a); }
-function results(id){ return ls('snq_r_' + id) || {}; }
-function newQuiz(from){
-  var src = from || {title:'Yeni sınaq', min:30, shuffle:true, qs:[]};
-  var q = {id: rid(8), topic: 'snq-' + rid(16), title: src.title, min: src.min, shuffle: src.shuffle, created: Date.now(),
-    qs: (src.qs.length ? src.qs : [{q:'', o:['','','',''], a:0, e:''}]).map(function(x){ var o = x.o.slice(); while (o.length < 4) o.push(''); return {q:x.q, o:o, a:x.a, e:x.e || ''}; })};
-  putQ(q); return q;
-}
-function toLinkData(Q){
-  return {i:Q.id, t:Q.title, m:Q.min, s:Q.shuffle ? 1 : 0, k:Q.topic, q:Q.qs.map(function(x){
-    var idx = []; x.o.forEach(function(t, j){ if (t.trim()) idx.push(j); });
-    return {q:x.q.trim(), o:idx.map(function(j){ return x.o[j].trim(); }), a:idx.indexOf(x.a), e:(x.e || '').trim()};
-  })};
-}
-function validate(Q){
-  if (!Q.title.trim()) return 'Sınağın adını yazın.';
-  if (!(Q.min >= 1)) return 'Vaxtı dəqiqə ilə yazın.';
-  if (!Q.qs.length) return 'Ən azı bir sual əlavə edin.';
-  for (var i = 0; i < Q.qs.length; i++){
-    var x = Q.qs[i], n = x.o.filter(function(t){ return t.trim(); }).length;
-    if (!x.q.trim()) return (i + 1) + '-ci sualın mətni boşdur.';
-    if (n < 2) return (i + 1) + '-ci sualda ən azı 2 variant olmalıdır.';
-    if (!(x.o[x.a] || '').trim()) return (i + 1) + '-ci sualda düzgün cavabı seçin (yaşıl dairə).';
-  }
-  return '';
-}
-
-function teacherRoute(parts){
-  clearInterval(pollT); timerEl.hidden = true; hd.textContent = 'Müəllim paneli'; document.title = 'Müəllim paneli';
-  if (parts[0] === 'edit' && getQ(parts[1])) return renderEdit(parts[1]);
-  if (parts[0] === 'link' && getQ(parts[1])) return renderLink(parts[1]);
-  if (parts[0] === 'res' && getQ(parts[1])) return renderRes(parts[1]);
-  renderHome();
-}
-
-function renderHome(){
-  var a = quizzes();
-  app.innerHTML = '<section class="sheet"><h2 class="title">Sınaqlarım</h2>' +
-    '<p class="who">Sual yazın, vaxt qoyun, linki şagirdlərə göndərin. Nəticələr burada canlı görünür.</p>' +
-    '<div class="row"><button class="btn" id="nw">+ Yeni sınaq</button><button class="btn ghost" id="sm">Nümunə sınaq əlavə et</button></div>' +
-    '<div class="list">' + (a.length ? a.map(function(q){
-      var r = results(q.id), n = Object.keys(r).filter(function(k){ return r[k].type === 'end'; }).length;
-      return '<div class="card"><h4>' + esc(q.title) + '</h4><p class="sub">' + q.qs.length + ' sual · ' + q.min + ' dəq · ' + n + ' nəticə</p>' +
-        '<div class="acts"><a class="btn sm" href="#muellim/res/' + q.id + '">Nəticələr</a><a class="btn sm ghost" href="#muellim/link/' + q.id + '">Link</a><a class="btn sm ghost" href="#muellim/edit/' + q.id + '">Redaktə</a><button class="btn sm danger" data-del="' + q.id + '">Sil</button></div></div>';
-    }).join('') : '<p class="note">Hələ sınaq yoxdur.</p>') + '</div>' +
-    '<hr><h3>Başqa telefondan bərpa et</h3><p class="hint">Köhnə şagird linkini yapışdırın — sınaq və onun nəticə kanalı bu telefona köçəcək.</p>' +
-    '<div class="row"><input id="imp" placeholder="Şagird linki"><button class="btn ghost" id="impb">Bərpa et</button></div><p class="err" id="impe"></p></section>';
-  $('nw').onclick = function(){ location.hash = 'muellim/edit/' + newQuiz().id; };
-  $('sm').onclick = function(){ location.hash = 'muellim/edit/' + newQuiz(SAMPLE).id; };
-  app.querySelectorAll('[data-del]').forEach(function(b){ b.onclick = function(){
-    if (b.dataset.sure){ saveQuizzes(quizzes().filter(function(q){ return q.id !== b.dataset.del; })); ls('snq_r_' + b.dataset.del, null); renderHome(); }
-    else { b.dataset.sure = 1; b.textContent = 'Əminsiniz? Bir də basın'; }
-  }; });
-  $('impb').onclick = function(){
-    var m = /#q=([^&]+)/.exec($('imp').value.trim());
-    if (!m){ $('impe').textContent = 'Bu, şagird linki deyil.'; return; }
-    unpack(m[1]).then(function(z){
-      putQ({id:z.i, topic:z.k, title:z.t, min:z.m, shuffle:!!z.s, created:Date.now(), qs:z.q.map(function(x){ var o = x.o.slice(); while (o.length < 4) o.push(''); return {q:x.q, o:o, a:x.a, e:x.e}; })});
-      renderHome();
-    }).catch(function(){ $('impe').textContent = 'Link oxunmadı.'; });
-  };
-}
-
-function renderEdit(id){
-  var Q = getQ(id), lastF = null, tSave = null;
-  var store = function(){ clearTimeout(tSave); tSave = setTimeout(function(){ putQ(Q); }, 300); };
-  app.innerHTML = '<section class="sheet"><a class="back" href="#muellim">← Sınaqlarım</a><h2 class="title">Sınağı hazırla</h2>' +
-    '<div class="form" style="margin-top:18px"><label class="full">Sınağın adı<input id="et" maxlength="80" value="' + esc(Q.title) + '"></label>' +
-    '<label>Vaxt (dəqiqə)<input id="em" type="number" min="1" max="300" inputmode="numeric" value="' + esc(Q.min) + '"></label>' +
-    '<label class="chk"><input type="checkbox" id="es"' + (Q.shuffle ? ' checked' : '') + '> Hər şagirddə sualların və variantların sırası fərqli olsun</label></div>' +
-    '<div class="sym" id="sym">' + SYM.map(function(s){ return '<button type="button" data-s="' + s + '">' + s + '</button>'; }).join('') + '</div>' +
-    '<div id="qs"></div>' +
-    '<button class="btn ghost" id="addq">+ Sual əlavə et</button>' +
-    '<p class="err" id="ee" style="margin-top:14px"></p>' +
-    '<button class="btn" id="mk">Yadda saxla və şagird linkini al</button>' +
-    '<p class="note center">Hər dəyişiklik avtomatik yadda saxlanır.</p></section>';
-  function draw(){
-    $('qs').innerHTML = Q.qs.map(function(x, i){
-      return '<div class="qc" data-i="' + i + '"><div class="qh"><b>Sual ' + (i + 1) + '</b><div class="acts">' +
-        '<button class="btn sm ghost" data-act="up" aria-label="Yuxarı"' + (i ? '' : ' disabled') + '>↑</button>' +
-        '<button class="btn sm ghost" data-act="dn" aria-label="Aşağı"' + (i < Q.qs.length - 1 ? '' : ' disabled') + '>↓</button>' +
-        '<button class="btn sm danger" data-act="del" aria-label="Sil">✕</button></div></div>' +
-        '<textarea data-f="q" placeholder="Sualın mətni">' + esc(x.q) + '</textarea>' +
-        x.o.map(function(t, j){ return '<div class="ov' + (x.a === j ? ' ok' : '') + '"><input type="radio" name="a' + i + '" data-f="a" value="' + j + '"' + (x.a === j ? ' checked' : '') + ' aria-label="Düzgün cavab ' + LET[j] + '"><input type="text" data-f="o' + j + '" placeholder="Variant ' + LET[j] + (j > 1 ? ' (istəyə görə)' : '') + '" value="' + esc(t) + '"></div>'; }).join('') +
-        '<p class="hint">Düzgün variantın yanındakı dairəni seçin.</p>' +
-        '<textarea data-f="e" placeholder="İzah (səhv edən şagirdə göstəriləcək)">' + esc(x.e) + '</textarea></div>';
-    }).join('');
-  }
-  draw();
-  $('et').oninput = function(){ Q.title = this.value; store(); };
-  $('em').oninput = function(){ Q.min = Math.max(0, parseInt(this.value, 10) || 0); store(); };
-  $('es').onchange = function(){ Q.shuffle = this.checked; store(); };
-  $('qs').addEventListener('input', function(ev){
-    var t = ev.target, f = t.dataset.f, card = t.closest('.qc'); if (!f || !card) return;
-    var x = Q.qs[+card.dataset.i];
-    if (f === 'q') x.q = t.value; else if (f === 'e') x.e = t.value; else if (f[0] === 'o') x.o[+f.slice(1)] = t.value;
-    store();
-  });
-  $('qs').addEventListener('change', function(ev){
-    var t = ev.target; if (t.dataset.f !== 'a') return;
-    var card = t.closest('.qc'); Q.qs[+card.dataset.i].a = +t.value; store();
-    card.querySelectorAll('.ov').forEach(function(o, j){ o.classList.toggle('ok', j === +t.value); });
-  });
-  $('qs').addEventListener('click', function(ev){
-    var b = ev.target.closest('[data-act]'); if (!b) return;
-    var i = +b.closest('.qc').dataset.i, act = b.dataset.act, t;
-    if (act === 'del'){ if (!b.dataset.sure){ b.dataset.sure = 1; b.textContent = 'Sil?'; return; } Q.qs.splice(i, 1); }
-    if (act === 'up'){ t = Q.qs[i - 1]; Q.qs[i - 1] = Q.qs[i]; Q.qs[i] = t; }
-    if (act === 'dn'){ t = Q.qs[i + 1]; Q.qs[i + 1] = Q.qs[i]; Q.qs[i] = t; }
-    store(); draw();
-  });
-  app.addEventListener('focusin', function(ev){ if (ev.target.matches('textarea, input[type=text], #et')) lastF = ev.target; });
-  $('sym').addEventListener('mousedown', function(ev){ ev.preventDefault(); });
-  $('sym').addEventListener('click', function(ev){
-    var b = ev.target.closest('[data-s]'); if (!b || !lastF) return;
-    var s = lastF.selectionStart, e = lastF.selectionEnd;
-    lastF.value = lastF.value.slice(0, s) + b.dataset.s + lastF.value.slice(e);
-    lastF.focus(); lastF.setSelectionRange(s + b.dataset.s.length, s + b.dataset.s.length);
-    lastF.dispatchEvent(new Event('input', {bubbles:true}));
-  });
-  $('addq').onclick = function(){ Q.qs.push({q:'', o:['','','',''], a:0, e:''}); store(); draw(); var c = $('qs').lastElementChild; c.scrollIntoView({behavior:'smooth', block:'center'}); c.querySelector('textarea').focus(); };
-  $('mk').onclick = function(){
-    var err = validate(Q); $('ee').textContent = err; if (err) return;
-    clearTimeout(tSave); putQ(Q); location.hash = 'muellim/link/' + Q.id;
-  };
-}
-
-function renderLink(id){
-  var Q = getQ(id), err = validate(Q);
-  if (err){ app.innerHTML = '<section class="sheet"><a class="back" href="#muellim">← Sınaqlarım</a><p class="err">' + esc(err) + '</p><a class="btn" href="#muellim/edit/' + id + '">Düzəlt</a></section>'; return; }
-  pack(toLinkData(Q)).then(function(d){
-    var link = base() + '#q=' + d, msg = Q.title + '\nSınağa bu linkdən girin:\n' + link;
-    app.innerHTML = '<section class="sheet"><a class="back" href="#muellim">← Sınaqlarım</a><h2 class="title">Şagird linki</h2>' +
-      '<p class="who">' + esc(Q.title) + ' · ' + Q.qs.length + ' sual · ' + Q.min + ' dəqiqə</p>' +
-      '<div class="linkbox">' + esc(link) + '</div>' +
-      '<div class="row"><button class="btn" id="cp">Linki kopyala</button><a class="btn ghost" href="https://wa.me/?text=' + encodeURIComponent(msg) + '" target="_blank" rel="noopener">WhatsApp-da göndər</a></div>' +
-      '<div class="row"><a class="btn ghost" href="https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(Q.title) + '" target="_blank" rel="noopener">Telegram-da göndər</a><a class="btn ghost" href="' + esc(link) + '&pv=1" target="_blank" rel="noopener">Önizləmə</a></div>' +
-      '<a class="btn" style="margin-top:22px" href="#muellim/res/' + id + '">Nəticələri canlı izlə →</a>' +
-      '<p class="note">Sualları dəyişsəniz, şagirdlərə yeni link göndərin. Nəticələr eyni yerə gəlməyə davam edəcək.</p>' +
-      '<p class="note">Telefona bildiriş istəsəniz: <b>ntfy</b> tətbiqini yükləyin və bu kanala abunə olun: <b>' + esc(Q.topic) + '</b></p></section>';
-    $('cp').onclick = function(){ copy(link, this); };
-  }).catch(function(){ app.innerHTML = '<section class="sheet"><p class="err">Link yaradılmadı. Brauzeri yeniləyin.</p></section>'; });
-}
-
-function renderRes(id){
-  var Q = getQ(id), R = results(id), open = {};
-  app.innerHTML = '<section class="sheet"><a class="back" href="#muellim">← Sınaqlarım</a><h2 class="title">' + esc(Q.title) + '</h2>' +
-    '<p class="live" id="lv"><i></i><span>Bağlanır…</span></p><div id="body"></div>' +
-    '<div class="row"><button class="btn ghost" id="cp">Cədvəli kopyala (Excel üçün)</button><a class="btn ghost" href="#muellim/link/' + id + '">Şagird linki</a></div>' +
-    '<p class="note">Nəticələr onlayn kanalda 12 saat saxlanır; bu səhifəni açdığınız an hamısı telefonunuza köçürülür və burada qalır. Sınaq günü bu səhifəni ən azı bir dəfə açın.</p></section>';
-  function rows(){ return Object.keys(R).map(function(k){ return R[k]; }).sort(function(a, b){
-    var ae = a.type === 'end', be = b.type === 'end'; if (ae !== be) return ae ? 1 : -1;
-    return ae ? (b.r[0] - a.r[0]) || (a.en - b.en) : b.st - a.st; }); }
-  function draw(){
-    var a = rows(), done = a.filter(function(x){ return x.type === 'end'; }), prog = a.length - done.length, N = Q.qs.length;
-    var avg = done.length ? Math.round(done.reduce(function(s, x){ return s + x.r[0]; }, 0) / done.length / N * 100) : 0;
-    $('body').innerHTML = '<div class="kpis"><div><b>' + done.length + '</b><span>bitirdi</span></div><div><b style="color:var(--amber)">' + prog + '</b><span>indi yazır</span></div><div><b>' + (done.length ? avg + '%' : '—') + '</b><span>orta nəticə</span></div></div>' +
-      (a.length ? '<div class="list">' + a.map(function(x){
-        var flags = (x.tb ? '<span class="flag">' + x.tb + ' dəfə çıxıb</span>' : '') + (x.tu ? '<span class="flag">vaxt bitdi</span>' : '');
-        if (x.type !== 'end') return '<details class="st prog"><summary><span class="nm">' + esc(x.n + ' ' + x.sn) + '</span><span class="pc">yazır…<small>' + hm(x.st) + '-dan</small></span><span class="inf">' + esc(x.c) + ' · № ' + esc(x.no) + '</span></summary></details>';
-        var tot = x.r[0] + x.r[1] + x.r[2], pct = Math.round(x.r[0] / tot * 100), dur = Math.round((x.en - x.st) / 60000);
-        var det = (x.ans || []).map(function(p, i){
-          var q = Q.qs[p[0]]; var lq = q ? toLinkData({id:'',topic:'',title:'',min:1,qs:[q]}).q[0] : null;
-          if (!lq) return '';
-          var ok = p[1] === lq.a, txt = p[1] == null ? 'boş' : esc(lq.o[p[1]]);
-          return '<div class="' + (p[1] == null ? '' : ok ? 'ok' : 'no') + '"><b>' + (p[0] + 1) + '.</b> ' + esc(lq.q) + '<br>Cavab: ' + txt + (ok ? ' ✓' : ' · Düz: ' + esc(lq.o[lq.a])) + '</div>';
-        }).join('');
-        return '<details class="st" data-sid="' + x.sid + '"' + (open[x.sid] ? ' open' : '') + '><summary><span class="nm">' + esc(x.n + ' ' + x.sn) + flags + '</span>' +
-          '<span class="pc">' + pct + '%<small>' + x.r[0] + ' düz · ' + x.r[1] + ' səhv · ' + x.r[2] + ' boş</small></span>' +
-          '<span class="inf">' + esc(x.c) + ' · № ' + esc(x.no) + ' · ' + day(x.en) + ' · ' + dur + ' dəq</span></summary>' +
-          '<div class="body"><p class="hint" style="margin-top:10px">Suallar sizin redaktordakı nömrə ilə</p><div class="ans">' + det + '</div></div></details>';
-      }).join('') + '</div>' : '<p class="note center" style="margin:30px 0">Hələ heç kim başlamayıb. Şagird sınağa girən kimi burada görünəcək.</p>');
-    $('body').querySelectorAll('details[data-sid]').forEach(function(d){ d.ontoggle = function(){ open[d.dataset.sid] = d.open; }; });
-  }
-  function poll(){
-    if (document.hidden) return;
-    fetch(NTFY + Q.topic + '/json?poll=1&since=all').then(function(r){ if (!r.ok) throw 0; return r.text(); }).then(function(t){
-      var changed = false;
-      t.split('\n').forEach(function(l){
-        if (!l.trim()) return; var m, p; try { m = JSON.parse(l); } catch(e){ return; }
-        if (m.event !== 'message' || !m.message) return;
-        var k = m.message.indexOf('\n§'); if (k < 0) return;
-        try { p = JSON.parse(m.message.slice(k + 2)); } catch(e){ return; }
-        if (!p || p.qz !== Q.id || !p.sid) return;
-        var old = R[p.sid];
-        if (old && old.type === 'end') return;
-        if (old && old.type === p.type) return;
-        R[p.sid] = p; changed = true;
-      });
-      if (changed){ ls('snq_r_' + id, R); draw(); }
-      $('lv').className = 'live'; $('lv').lastChild.textContent = 'Canlı · son yoxlama ' + hm(Date.now());
-    }).catch(function(){ $('lv').className = 'live bad'; $('lv').lastChild.textContent = 'İnternet yoxdur — saxlanmış nəticələr göstərilir'; });
-  }
-  draw(); poll(); pollT = setInterval(poll, 8000);
-  $('cp').onclick = function(){
-    var head = 'Ad\tSoyad\tSinif\tNömrə\tDüz\tSəhv\tBoş\tFaiz\tÇıxma\tBitirdi';
-    copy(head + '\n' + rows().filter(function(x){ return x.type === 'end'; }).map(function(x){
-      var tot = x.r[0] + x.r[1] + x.r[2]; return [x.n, x.sn, x.c, x.no, x.r[0], x.r[1], x.r[2], Math.round(x.r[0] / tot * 100) + '%', x.tb, day(x.en)].join('\t');
-    }).join('\n'), this);
-  };
-}
-document.addEventListener('visibilitychange', function(){ if (!document.hidden && /^#muellim\/res\//.test(location.hash)) { var b = $('lv'); if (b) b.lastChild.textContent = 'Yenilənir…'; } });
-
-/* =====================================================================
-   YÖNLƏNDİRMƏ
-   ===================================================================== */
-function route(){
-  var h = location.hash.slice(1);
-  if (h.indexOf('q=') === 0){
-    if (Z) return;
-    var hp = new URLSearchParams(h), d = hp.get('q');
-    if (d[0] === 'z' && !window.DecompressionStream){ app.innerHTML = '<section class="sheet"><p class="err">Brauzeriniz köhnədir. Chrome-u yeniləyib linki yenidən açın.</p></section>'; return; }
-    unpack(d).then(function(z){ studentStart(z, hp.get('pv') === '1'); })
-      .catch(function(){ app.innerHTML = '<section class="sheet"><p class="err">Link xətalıdır. Müəllimdən linki yenidən istəyin.</p></section>'; });
-    return;
-  }
-  if (h === 'setup' || h.indexOf('muellim') === 0) return teacherRoute(h.split('/').slice(1));
-  hd.textContent = 'Sınaq';
-  app.innerHTML = '<section class="sheet"><h2 class="title">Onlayn sınaq</h2><p class="who">Şagirdsinizsə, sınaq linkini müəlliminizdən alın.</p>' +
-    '<a class="btn" style="margin-top:22px" href="#muellim">Müəllim paneli</a></section>';
-}
-window.addEventListener('hashchange', route);
-route();
+boot();
 }
 </script>
 </body>
